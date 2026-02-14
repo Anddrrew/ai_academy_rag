@@ -1,3 +1,10 @@
 fastapi
 uvicorn[standard]
+pydantic-settings[yaml]
 rich
+openai-whisper
+sentence-transformers>=3.0
+qdrant-client
+langchain-text-splitters
+langchain-huggingface
+langchain-qdrant

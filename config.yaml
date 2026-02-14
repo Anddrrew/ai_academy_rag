@@ -1,0 +1,22 @@
+qdrant:
+  host: localhost
+  port: 6333
+  collection: knowledge_base
+  force_clear: true
+
+embedding:
+  model: Qwen/Qwen3-Embedding-0.6B
+  vector_size: 1024
+
+chunking:
+  size: 500
+  overlap: 50
+
+whisper:
+  model_size: base
+
+server:
+  host: "0.0.0.0"
+  port: 8000
+  reload: true
+  log_level: INFO

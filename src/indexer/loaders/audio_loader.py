@@ -1,5 +1,14 @@
+import logging
 from pathlib import Path
 
+import whisper
 
-def load(file_path: Path, model_size: str = "base") -> str:
-    return "" # TODO: implement audio loading with whisper
+from config import config
+
+
+model = whisper.load_model(config.whisper.model_size)
+
+
+def load(file_path: Path) -> str:
+    result = model.transcribe(str(file_path))
+    return result["text"]
