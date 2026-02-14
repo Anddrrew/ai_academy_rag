@@ -51,7 +51,13 @@ class IndexerRunner:
 
     def get_status(self) -> IndexingStatus:
         return self._status
-
+    
+    def get_loader(self, file_path: Path):
+        ext = file_path.suffix.lower()
+        loader = LOADERS.get(ext)
+        return loader
+    
+    
     def _run(self) -> None:
         files = [f for f in KNOWLEDGE_BASE_DIR.iterdir() if f.is_file()]
 
@@ -59,20 +65,20 @@ class IndexerRunner:
             self.logger.warning("No files found in knowledge_base/")
             self._status = IndexingStatus.DONE
             return
-
+        
         for file_path in files:
             if self._stop_event.is_set():
                 self.logger.info("Indexing interrupted.")
                 return
+            
 
-            ext = file_path.suffix.lower()
-            loader = LOADERS.get(ext)
+            self.logger.info("Processing %s", file_path.name)
 
+            loader = self.get_loader(file_path)
             if loader is None:
                 self.logger.warning("Unsupported file type: %s", file_path.name)
                 continue
 
-            self.logger.info("Loading %s", file_path.name)
             text = loader(file_path)
             self.logger.info("Extracted %d characters from %s",
                         len(text), file_path.name)

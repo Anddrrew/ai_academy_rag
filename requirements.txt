@@ -7,4 +7,5 @@ sentence-transformers>=3.0
 qdrant-client
 langchain-text-splitters
 langchain-huggingface
-langchain-qdrant
+langchain-community
+pypdf
