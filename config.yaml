@@ -15,6 +15,9 @@ chunking:
 whisper:
   model_size: base
 
+llm:
+  model: gpt-4o-mini
+
 server:
   host: "0.0.0.0"
   port: 8000

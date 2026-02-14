@@ -2,7 +2,7 @@ import hashlib
 import logging
 
 from qdrant_client import QdrantClient
-from qdrant_client.models import Distance, PointStruct, VectorParams
+from qdrant_client.models import Distance, PointStruct, ScoredPoint, VectorParams
 
 from config import config
 from chunker import Chunk
@@ -53,12 +53,13 @@ class Store:
             return
         self._client.upsert(collection_name=config.qdrant.collection, points=points)
 
-    def search(self, vector: list[float], k: int = 5) -> list[PointStruct]:
-        return self._client.search(
+    def search(self, vector: list[float], k: int = 5) -> list[ScoredPoint]:
+        result = self._client.query_points(
             collection_name=config.qdrant.collection,
-            query_vector=vector,
+            query=vector,
             limit=k,
         )
+        return result.points
 
 
 store = Store()
