@@ -31,6 +31,7 @@ class WhisperConfig(BaseModel):
 
 class LLMConfig(BaseModel):
     model: str
+    display_name: str = "My RAG"
     api_key: str
 
 

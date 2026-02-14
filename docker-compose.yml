@@ -7,5 +7,20 @@ services:
     volumes:
       - qdrant_storage:/qdrant/storage
 
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    ports:
+      - "3000:8080"
+    environment:
+      - OPENAI_API_BASE_URL=http://host.docker.internal:8000/v1
+      - OPENAI_API_KEY=dummy
+    volumes:
+      - open_webui_data:/app/backend/data
+    extra_hosts:
+      - "host.docker.internal:host-gateway"  # required on Linux; no-op on macOS
+    depends_on:
+      - qdrant
+
 volumes:
   qdrant_storage:
+  open_webui_data:
