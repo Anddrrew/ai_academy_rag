@@ -1,0 +1,16 @@
+FROM python:3.11-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends curl ffmpeg && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+COPY packages/indexer/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY packages/shared/ ./shared/
+COPY packages/indexer/src/ .
+COPY config.yaml .
+COPY .env .
+
+CMD ["fastapi", "run", "main.py", "--port", "8000"]
+
+

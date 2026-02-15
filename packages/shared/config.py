@@ -12,12 +12,12 @@ class QdrantConfig(BaseModel):
     host: str
     port: int
     collection: str
-    force_clear: bool
 
 
 class EmbeddingConfig(BaseModel):
     model: str
     vector_size: int
+    url: str = "http://localhost:8080"
 
 
 class ChunkingConfig(BaseModel):
@@ -40,7 +40,6 @@ class ServerConfig(BaseModel):
     port: int
     reload: bool
     log_level: str
-    public_url: str = "http://localhost:8000"
 
 
 class Config(BaseSettings):
@@ -68,9 +67,9 @@ class Config(BaseSettings):
         file_secret_settings: PydanticBaseSettingsSource,
     ) -> tuple[PydanticBaseSettingsSource, ...]:
         return (
-            YamlConfigSettingsSource(settings_cls),
             env_settings,
             dotenv_settings,
+            YamlConfigSettingsSource(settings_cls),
         )
 
 

@@ -209,3 +209,7 @@ __marimo__/
 
 task.txt
 knowledge_base/
+huggingface_cache/
+
+.DB_Store/
+.DS_Store

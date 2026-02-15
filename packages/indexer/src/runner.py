@@ -3,11 +3,11 @@ import threading
 from enum import Enum
 from pathlib import Path
 
-from services.chunker import chunker
-from services.embedder import embedder
-from services.file_manager import file_manager
-from indexer.loaders import audio_loader, pdf_loader
-from services.knowledge_storage import knowledge_storage
+from chunker import chunker
+from shared.services.knowledge_storage import KnowledgeStorage
+from shared.services.embedder import embedder
+from shared.services.file_manager import file_manager
+from loaders import audio_loader, pdf_loader
 
 
 LOADERS = {
@@ -34,6 +34,7 @@ class IndexerRunner:
             cls._instance._thread = None
             cls._instance._stop_event = threading.Event()
             cls._instance.logger = logging.getLogger(cls.__name__)
+            cls._instance._knowledge_storage = KnowledgeStorage()
         return cls._instance
 
     def start(self) -> None:
@@ -51,41 +52,42 @@ class IndexerRunner:
 
     def get_status(self) -> IndexingStatus:
         return self._status
-    
+
     def get_loader(self, file_path: Path):
         ext = file_path.suffix.lower()
         loader = LOADERS.get(ext)
         return loader
-    
-    
+
     def _run(self) -> None:
         files_processed = 0
-        
+
+        self._knowledge_storage.reset_storage()  # Clear existing data before indexing
+
         for file_path in file_manager.iter_files():
             if self._stop_event.is_set():
                 self.logger.info("Indexing interrupted.")
                 return
-            
 
             self.logger.info("Processing %s", file_path.name)
 
             loader = self.get_loader(file_path)
             if loader is None:
-                self.logger.warning("Unsupported file type: %s", file_path.name)
+                self.logger.warning(
+                    "Unsupported file type: %s", file_path.name)
                 continue
 
             text = loader(file_path)
             self.logger.info("Extracted %d characters from %s",
-                        len(text), file_path.name)
+                             len(text), file_path.name)
 
             chunks = chunker.split(text, source=file_path.name)
             vectors = embedder.embed_chunks(chunks)
-            knowledge_storage.add_chunks(chunks, vectors)
+            self._knowledge_storage.add_chunks(chunks, vectors)
             files_processed += 1
 
         if files_processed == 0:
             self.logger.warning("No files found in knowledge base directory.")
-        
+
         self._status = IndexingStatus.DONE
         self.logger.info("Indexing complete.")
 

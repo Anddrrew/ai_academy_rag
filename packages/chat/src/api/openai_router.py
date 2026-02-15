@@ -6,10 +6,10 @@ from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
-from config import config
-from services.embedder import embedder
+from knowledge_storage import knowledge_storage
+from shared.config import config
+from shared.services.embedder import embedder
 from llm import llm
-from services.knowledge_storage import knowledge_storage
 
 router = APIRouter()
 
@@ -26,7 +26,8 @@ class OpenAIChatRequest(BaseModel):
 
 
 def _get_context_chunks(messages: list[Message]) -> list[str]:
-    last_user = next((m.content for m in reversed(messages) if m.role == "user"), None)
+    last_user = next((m.content for m in reversed(
+        messages) if m.role == "user"), None)
     if not last_user:
         return []
     vector = embedder.embed_query(last_user)

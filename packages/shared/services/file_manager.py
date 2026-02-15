@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Iterator
 from urllib.parse import quote
 
-from config import config
+from shared.config import config
 
 
 class FileManager:
@@ -38,12 +38,9 @@ class FileManager:
     def get_file_path(self, filename: str) -> Path:
         return self._knowledge_base_dir / filename
 
-    def file_exists(self, filename: str) -> bool:
-        return self.get_file_path(filename).exists()
-
     def get_public_url(self, filename: str) -> str:
         encoded_filename = quote(filename)
-        return f"{config.server.public_url}/files/{encoded_filename}"
+        return f"{config.server.host}:{config.server.port}/files/{encoded_filename}"
 
     def get_file_extension(self, file_path: Path) -> str:
         """Get the lowercase file extension."""

@@ -1,0 +1,6 @@
+fastapi[standard]
+pydantic-settings[yaml]
+rich
+qdrant-client
+openai
+httpx

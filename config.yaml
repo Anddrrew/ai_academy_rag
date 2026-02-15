@@ -2,7 +2,6 @@ qdrant:
   host: localhost
   port: 6333
   collection: knowledge_base
-  force_clear: true
 
 embedding:
   model: Qwen/Qwen3-Embedding-0.6B

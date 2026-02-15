@@ -6,7 +6,7 @@ from collections.abc import AsyncIterator
 
 from openai import AsyncOpenAI, OpenAI
 
-from config import config
+from shared.config import config
 
 SYSTEM_PROMPT = """You are a helpful assistant. Answer the user's question using only the provided context.
 If the context does not contain enough information to answer, say so honestly."""

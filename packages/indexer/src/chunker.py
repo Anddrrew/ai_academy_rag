@@ -1,16 +1,9 @@
 import logging
-from dataclasses import dataclass
 
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-from config import config
-
-
-@dataclass
-class Chunk:
-    text: str
-    source: str
-    index: int
+from shared.types.Chunk import Chunk
+from shared.config import config
 
 
 class Chunker:

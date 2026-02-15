@@ -1,39 +1,37 @@
 import hashlib
 import logging
+from xmlrpc import client
 
 from qdrant_client import QdrantClient
-from qdrant_client.models import Distance, PointStruct, ScoredPoint, VectorParams
+from qdrant_client.models import Distance, PointStruct, ScoredPoint, VectorParams, FilterSelector,  Filter
 
-from config import config
-from services.chunker import Chunk
+from shared.config import config
+from shared.types.Chunk import Chunk
+
 
 class KnowledgeStorage:
     def __init__(self) -> None:
         self.logger = logging.getLogger(self.__class__.__name__)
-        self._client = QdrantClient(host=config.qdrant.host, port=config.qdrant.port)
+        self._collection = config.qdrant.collection
+        self._client = QdrantClient(
+            host=config.qdrant.host, port=config.qdrant.port)
 
-        if config.qdrant.force_clear:
-            self._reset_storage()
-        elif not self._client.collection_exists(config.qdrant.collection):
-            self._create_storage()
+        self._check_collection_on_init()
 
-    def _reset_storage(self) -> None:
-        if self._client.collection_exists(config.qdrant.collection):
-            self._client.delete_collection(config.qdrant.collection)
-            self.logger.warning("Dropped collection '%s' (force_clear=true)", config.qdrant.collection)
-        self._create_storage()
+    def _check_collection_on_init(self) -> None:
+        if (self._client.collection_exists(collection_name=self._collection)):
+            return
 
-    def _create_storage(self) -> None:
         self._client.create_collection(
             collection_name=config.qdrant.collection,
-            vectors_config=VectorParams(size=config.embedding.vector_size, distance=Distance.COSINE),
+            vectors_config=VectorParams(
+                size=config.embedding.vector_size, distance=Distance.COSINE),
         )
         self.logger.info("Created collection '%s'", config.qdrant.collection)
 
     def _make_point_id(self, source: str, index: int) -> int:
         digest = hashlib.sha256(f"{source}:{index}".encode()).digest()
         return int.from_bytes(digest[:8], "big")
-
 
     def add_chunks(self, chunks: list[Chunk], vectors: list[list[float]]) -> None:
         if not chunks:
@@ -51,7 +49,8 @@ class KnowledgeStorage:
     def upsert(self, points: list[PointStruct]) -> None:
         if not points:
             return
-        self._client.upsert(collection_name=config.qdrant.collection, points=points)
+        self._client.upsert(
+            collection_name=config.qdrant.collection, points=points)
 
     def search(self, vector: list[float], k: int = 5) -> list[ScoredPoint]:
         result = self._client.query_points(
@@ -61,5 +60,9 @@ class KnowledgeStorage:
         )
         return result.points
 
+    def reset_storage(self) -> None:
+        self._client.delete(collection_name=self._collection,
+                            points_selector=FilterSelector(filter=Filter()))
 
-knowledge_storage = KnowledgeStorage()
+        self.logger.info(
+            "Knowledge storage reset: all points deleted from collection '%s'", self._collection)

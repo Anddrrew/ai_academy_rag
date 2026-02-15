@@ -3,7 +3,7 @@ from pathlib import Path
 
 import whisper
 
-from config import config
+from shared.config import config
 
 logger = logging.getLogger(__name__)
 model = whisper.load_model(config.whisper.model_size)

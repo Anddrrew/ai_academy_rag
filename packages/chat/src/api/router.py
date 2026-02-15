@@ -1,12 +1,10 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
 
-from services.embedder import embedder
-from services.file_manager import file_manager
-from indexer import indexer
-from indexer.runner import IndexingStatus
+from knowledge_storage import knowledge_storage
+from shared.services.embedder import embedder
+from shared.services.file_manager import file_manager
 from llm import llm
-from services.knowledge_storage import knowledge_storage
 
 router = APIRouter()
 
@@ -17,7 +15,6 @@ class ChatRequest(BaseModel):
 
 class ChatResponse(BaseModel):
     answer: str
-    indexing_status: IndexingStatus
 
 
 @router.post("/chat")
@@ -30,9 +27,8 @@ def chat(request: ChatRequest) -> ChatResponse:
         for r in results
     ]
     answer = llm.chat(question, context_chunks)
-    return ChatResponse(answer=answer, indexing_status=indexer.get_status())
-
+    return ChatResponse(answer=answer)
 
 @router.get("/status")
 def status():
-    return {"indexing_status": indexer.get_status()}
+    return {"status": "ok"}
