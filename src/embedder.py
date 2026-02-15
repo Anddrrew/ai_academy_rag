@@ -11,9 +11,9 @@ class Embedder:
         self.logger = logging.getLogger(self.__class__.__name__)
         self._model = HuggingFaceEmbeddings(model_name=config.embedding.model)
 
-    def embed_chunks(self, chunks: list[Chunk]) -> None:
+    def embed_chunks(self, chunks: list[Chunk]) -> list[list[float]]:
         if not chunks:
-            return
+            return []
         vectors = self._model.embed_documents([c.text for c in chunks])
         return vectors
 

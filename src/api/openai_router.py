@@ -1,5 +1,6 @@
 import time
 import uuid
+from urllib.parse import quote
 
 from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
@@ -30,7 +31,10 @@ def _get_context_chunks(messages: list[Message]) -> list[str]:
         return []
     vector = embedder.embed_query(last_user)
     results = store.search(vector, k=5)
-    return [r.payload["text"] for r in results]
+    return [
+        f"[Source: [{r.payload['source']}]({config.server.public_url}/files/{quote(r.payload['source'])})]\n{r.payload['text']}"
+        for r in results
+    ]
 
 
 @router.get("/v1/models")

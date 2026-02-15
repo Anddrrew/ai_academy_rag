@@ -5,11 +5,10 @@ from pathlib import Path
 
 from chunker import chunker
 from embedder import embedder
+from file_manager import file_manager
 from indexer.loaders import audio_loader, pdf_loader
 from store import store
 
-
-KNOWLEDGE_BASE_DIR = Path(__file__).parent.parent.parent / "knowledge_base"
 
 LOADERS = {
     ".pdf": pdf_loader.load,
@@ -59,14 +58,9 @@ class IndexerRunner:
     
     
     def _run(self) -> None:
-        files = [f for f in KNOWLEDGE_BASE_DIR.iterdir() if f.is_file()]
-
-        if not files:
-            self.logger.warning("No files found in knowledge_base/")
-            self._status = IndexingStatus.DONE
-            return
+        files_processed = 0
         
-        for file_path in files:
+        for file_path in file_manager.iter_files():
             if self._stop_event.is_set():
                 self.logger.info("Indexing interrupted.")
                 return
@@ -86,7 +80,11 @@ class IndexerRunner:
             chunks = chunker.split(text, source=file_path.name)
             vectors = embedder.embed_chunks(chunks)
             store.add_chunks(chunks, vectors)
+            files_processed += 1
 
+        if files_processed == 0:
+            self.logger.warning("No files found in knowledge base directory.")
+        
         self._status = IndexingStatus.DONE
         self.logger.info("Indexing complete.")
 

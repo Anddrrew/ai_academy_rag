@@ -40,6 +40,7 @@ class ServerConfig(BaseModel):
     port: int
     reload: bool
     log_level: str
+    public_url: str = "http://localhost:8000"
 
 
 class Config(BaseSettings):

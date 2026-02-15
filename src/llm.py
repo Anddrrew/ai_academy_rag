@@ -11,11 +11,13 @@ from config import config
 SYSTEM_PROMPT = """You are a helpful assistant. Answer the user's question using only the provided context.
 If the context does not contain enough information to answer, say so honestly."""
 
+SOURCES_INSTRUCTION = """At the end of your answer add a "Sources:" section listing each source as a markdown link, exactly as provided in the context (e.g. [filename.pdf](url))."""
+
 
 def _inject_context(messages: list[dict], context_chunks: list[str]) -> list[dict]:
     if context_chunks:
         context = "\n\n".join(context_chunks)
-        system_content = f"{SYSTEM_PROMPT}\n\nRelevant context:\n{context}"
+        system_content = f"{SYSTEM_PROMPT}\n\n{SOURCES_INSTRUCTION}\n\nRelevant context:\n{context}"
     else:
         system_content = SYSTEM_PROMPT
     return [{"role": "system", "content": system_content}] + messages
@@ -30,14 +32,11 @@ class LLM:
 
     def chat(self, question: str, context_chunks: list[str]) -> str:
         """Single-turn chat used by the legacy /chat endpoint."""
-        context = "\n\n".join(context_chunks)
         self.logger.debug("Calling %s with %d context chunks", self._model, len(context_chunks))
+        messages = _inject_context([{"role": "user", "content": question}], context_chunks)
         response = self._client.chat.completions.create(
             model=self._model,
-            messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": f"Context:\n{context}\n\nQuestion: {question}"},
-            ],
+            messages=messages,
         )
         return response.choices[0].message.content
 
