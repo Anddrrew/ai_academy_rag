@@ -13,6 +13,7 @@ from store import store
 LOADERS = {
     ".pdf": pdf_loader.load,
     ".mp3": audio_loader.load,
+    ".mp4": audio_loader.load,
 }
 
 
