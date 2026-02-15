@@ -7,9 +7,9 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from config import config
-from embedder import embedder
+from services.embedder import embedder
 from llm import llm
-from store import store
+from services.knowledge_storage import knowledge_storage
 
 router = APIRouter()
 
@@ -30,7 +30,7 @@ def _get_context_chunks(messages: list[Message]) -> list[str]:
     if not last_user:
         return []
     vector = embedder.embed_query(last_user)
-    results = store.search(vector, k=5)
+    results = knowledge_storage.search(vector, k=5)
     return [
         f"[Source: [{r.payload['source']}]({config.server.public_url}/files/{quote(r.payload['source'])})]\n{r.payload['text']}"
         for r in results

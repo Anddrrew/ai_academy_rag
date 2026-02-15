@@ -1,12 +1,12 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
 
-from embedder import embedder
-from file_manager import file_manager
+from services.embedder import embedder
+from services.file_manager import file_manager
 from indexer import indexer
 from indexer.runner import IndexingStatus
 from llm import llm
-from store import store
+from services.knowledge_storage import knowledge_storage
 
 router = APIRouter()
 
@@ -24,7 +24,7 @@ class ChatResponse(BaseModel):
 def chat(request: ChatRequest) -> ChatResponse:
     question = request.question
     vector = embedder.embed_query(question)
-    results = store.search(vector, k=5)
+    results = knowledge_storage.search(vector, k=5)
     context_chunks = [
         f"[Source: [{r.payload['source']}]({file_manager.get_public_url(r.payload['source'])})]\n{r.payload['text']}"
         for r in results

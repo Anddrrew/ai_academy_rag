@@ -5,9 +5,9 @@ from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, PointStruct, ScoredPoint, VectorParams
 
 from config import config
-from chunker import Chunk
+from services.chunker import Chunk
 
-class Store:
+class KnowledgeStorage:
     def __init__(self) -> None:
         self.logger = logging.getLogger(self.__class__.__name__)
         self._client = QdrantClient(host=config.qdrant.host, port=config.qdrant.port)
@@ -62,4 +62,4 @@ class Store:
         return result.points
 
 
-store = Store()
+knowledge_storage = KnowledgeStorage()

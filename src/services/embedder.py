@@ -2,7 +2,7 @@ import logging
 
 from langchain_huggingface import HuggingFaceEmbeddings
 
-from chunker import Chunk
+from services.chunker import Chunk
 from config import config
 
 

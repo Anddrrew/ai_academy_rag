@@ -3,11 +3,11 @@ import threading
 from enum import Enum
 from pathlib import Path
 
-from chunker import chunker
-from embedder import embedder
-from file_manager import file_manager
+from services.chunker import chunker
+from services.embedder import embedder
+from services.file_manager import file_manager
 from indexer.loaders import audio_loader, pdf_loader
-from store import store
+from services.knowledge_storage import knowledge_storage
 
 
 LOADERS = {
@@ -80,7 +80,7 @@ class IndexerRunner:
 
             chunks = chunker.split(text, source=file_path.name)
             vectors = embedder.embed_chunks(chunks)
-            store.add_chunks(chunks, vectors)
+            knowledge_storage.add_chunks(chunks, vectors)
             files_processed += 1
 
         if files_processed == 0:

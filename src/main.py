@@ -1,7 +1,7 @@
 from indexer import indexer
 from api.openai_router import router as openai_router
-from api import router
-from file_manager import file_manager
+from api.router import router
+from services.file_manager import file_manager
 import logging
 from contextlib import asynccontextmanager
 
