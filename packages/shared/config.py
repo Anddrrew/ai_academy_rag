@@ -4,8 +4,8 @@ from pydantic import BaseModel
 from pydantic_settings import BaseSettings, SettingsConfigDict, YamlConfigSettingsSource
 from pydantic_settings.main import PydanticBaseSettingsSource
 
-YAML_CONFIG_FILE = Path(__file__).parent.parent / "config.yaml"
-ENV_CONFIG_FILE = Path(__file__).parent.parent / ".env"
+YAML_CONFIG_FILE = Path(__file__).parent.parent.parent / "config.yaml"
+ENV_CONFIG_FILE = Path(__file__).parent.parent.parent / ".env"
 
 
 class QdrantConfig(BaseModel):

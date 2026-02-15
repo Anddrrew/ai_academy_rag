@@ -6,6 +6,7 @@ qdrant:
 embedding:
   model: Qwen/Qwen3-Embedding-0.6B
   vector_size: 1024
+  url: http://localhost:3003/embed
 
 chunking:
   size: 500

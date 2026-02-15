@@ -1,0 +1,20 @@
+# shared
+fastapi[standard]
+httpx
+pydantic-settings[yaml]
+rich
+qdrant-client
+supervisor
+
+# embedder
+langchain-huggingface
+sentence_transformers
+
+# indexer
+langchain-text-splitters
+langchain-community
+pypdf
+openai-whisper
+
+# chat
+openai

@@ -14,7 +14,7 @@ class FileManager:
             cls._instance = super().__new__(cls)
             cls._instance.logger = logging.getLogger(cls.__name__)
             cls._instance._knowledge_base_dir = (
-                Path(__file__).parent.parent.parent / "knowledge_base"
+                Path(__file__).parent.parent.parent.parent / "knowledge_base"
             )
         return cls._instance
 
