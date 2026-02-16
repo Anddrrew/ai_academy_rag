@@ -40,7 +40,7 @@ class FileManager:
 
     def get_public_url(self, filename: str) -> str:
         encoded_filename = quote(filename)
-        return f"{config.server.host}:{config.server.port}/files/{encoded_filename}"
+        return f"{config.server.public_url}/files/{encoded_filename}"
 
     def get_file_extension(self, file_path: Path) -> str:
         """Get the lowercase file extension."""

@@ -17,10 +17,8 @@ whisper:
 
 llm:
   model: gpt-4o-mini
-  display_name: My RAG
+  display_name: RAG Assistant
 
 server:
-  host: "0.0.0.0"
-  port: 8000
-  reload: true
+  public_url: http://localhost:3001
   log_level: INFO

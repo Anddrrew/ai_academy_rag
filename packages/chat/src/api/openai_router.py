@@ -9,6 +9,7 @@ from pydantic import BaseModel
 from knowledge_storage import knowledge_storage
 from shared.config import config
 from shared.services.embedder import embedder
+from shared.services.file_manager import file_manager
 from llm import llm
 
 router = APIRouter()
@@ -33,7 +34,7 @@ def _get_context_chunks(messages: list[Message]) -> list[str]:
     vector = embedder.embed_query(last_user)
     results = knowledge_storage.search(vector, k=5)
     return [
-        f"[Source: [{r.payload['source']}]({config.server.public_url}/files/{quote(r.payload['source'])})]\n{r.payload['text']}"
+        f"[Source: [{r.payload['source']}]({file_manager.get_public_url(r.payload['source'])})]\n{r.payload['text']}"
         for r in results
     ]
 

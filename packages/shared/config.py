@@ -31,14 +31,12 @@ class WhisperConfig(BaseModel):
 
 class LLMConfig(BaseModel):
     model: str
-    display_name: str = "My RAG"
+    display_name: str
     api_key: str
 
 
 class ServerConfig(BaseModel):
-    host: str
-    port: int
-    reload: bool
+    public_url: str
     log_level: str
 
 
