@@ -6,7 +6,7 @@ import whisper
 from shared.config import config
 
 logger = logging.getLogger(__name__)
-model = whisper.load_model(config.whisper.model_size)
+model = whisper.load_model(config.openai.whisper_model)
 
 
 def load(file_path: Path) -> str:

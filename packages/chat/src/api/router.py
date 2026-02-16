@@ -21,7 +21,7 @@ class ChatResponse(BaseModel):
 def chat(request: ChatRequest) -> ChatResponse:
     question = request.question
     vector = embedder.embed_query(question)
-    results = knowledge_storage.search(vector, k=5)
+    results = knowledge_storage.search(vector)
     context_chunks = [
         f"[Source: [{r.payload['source']}]({file_manager.get_public_url(r.payload['source'])})]\n{r.payload['text']}"
         for r in results

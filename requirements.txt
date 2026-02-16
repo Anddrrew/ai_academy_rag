@@ -1,7 +1,7 @@
 # shared
 fastapi[standard]
 httpx
-pydantic-settings[yaml]
+pydantic-settings
 rich
 qdrant-client
 

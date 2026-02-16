@@ -8,7 +8,7 @@ from shared.config import config
 
 logging.basicConfig(level="INFO")
 
-MODEL_NAME = config.embedding.model
+MODEL_NAME = config.embedding.model_name
 
 logger = logging.getLogger("embedder")
 model: HuggingFaceEmbeddings | None = None

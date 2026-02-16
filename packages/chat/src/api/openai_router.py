@@ -32,7 +32,7 @@ def _get_context_chunks(messages: list[Message]) -> list[str]:
     if not last_user:
         return []
     vector = embedder.embed_query(last_user)
-    results = knowledge_storage.search(vector, k=5)
+    results = knowledge_storage.search(vector)
     return [
         f"[Source: [{r.payload['source']}]({file_manager.get_public_url(r.payload['source'])})]\n{r.payload['text']}"
         for r in results
@@ -45,7 +45,7 @@ def list_models():
         "object": "list",
         "data": [
             {
-                "id": config.llm.display_name,
+                "id": config.server.display_name,
                 "object": "model",
                 "created": int(time.time()),
                 "owned_by": "rag",
