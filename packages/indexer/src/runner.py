@@ -19,7 +19,7 @@ LOADERS = {
 
 class IndexingStatus(str, Enum):
     IDLE = "idle"
-    RUNNING = "running"
+    RUNNING = "indexing"
     DONE = "done"
     STOPPED = "stopped"
 
