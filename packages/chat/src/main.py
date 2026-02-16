@@ -17,7 +17,7 @@ logging.basicConfig(
 )
 
 
-app = FastAPI()
+app = FastAPI(title="RAG Chat", description="RAG-based chatbot")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
