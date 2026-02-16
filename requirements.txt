@@ -4,7 +4,6 @@ httpx
 pydantic-settings[yaml]
 rich
 qdrant-client
-supervisor
 
 # embedder
 langchain-huggingface
