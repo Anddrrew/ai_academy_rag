@@ -72,13 +72,11 @@ class IndexerRunner:
 
             loader = self.get_loader(file_path)
             if loader is None:
-                self.logger.warning(
-                    "Unsupported file type: %s", file_path.name)
+                self.logger.warning("Unsupported file type: %s", file_path.name)
                 continue
 
             text = loader(file_path)
-            self.logger.info("Extracted %d characters from %s",
-                             len(text), file_path.name)
+            self.logger.info("Extracted %d characters from %s", len(text), file_path.name)
 
             chunks = chunker.split(text, source=file_path.name)
             vectors = embedder.embed_chunks(chunks)

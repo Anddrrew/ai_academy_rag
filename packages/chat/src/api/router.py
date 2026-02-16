@@ -29,6 +29,7 @@ def chat(request: ChatRequest) -> ChatResponse:
     answer = llm.chat(question, context_chunks)
     return ChatResponse(answer=answer)
 
+
 @router.get("/status")
 def status():
     return {"status": "ok"}

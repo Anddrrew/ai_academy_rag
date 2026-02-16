@@ -15,6 +15,7 @@ SOURCES_INSTRUCTION = """At the end of your answer add a "Sources:" section list
 
 MODEL_NAME = config.openai.chat_model
 
+
 def _inject_context(messages: list[dict], context_chunks: list[str]) -> list[dict]:
     if context_chunks:
         context = "\n\n".join(context_chunks)
@@ -69,7 +70,9 @@ class LLM:
                     "object": "chat.completion.chunk",
                     "created": created,
                     "model": MODEL_NAME,
-                    "choices": [{"index": 0, "delta": {"content": chunk.choices[0].delta.content}, "finish_reason": None}],
+                    "choices": [
+                        {"index": 0, "delta": {"content": chunk.choices[0].delta.content}, "finish_reason": None}
+                    ],
                 }
                 yield f"data: {json.dumps(payload)}\n\n"
 

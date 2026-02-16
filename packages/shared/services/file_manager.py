@@ -13,9 +13,7 @@ class FileManager:
         if cls._instance is None:
             cls._instance = super().__new__(cls)
             cls._instance.logger = logging.getLogger(cls.__name__)
-            cls._instance._knowledge_base_dir = (
-                Path(__file__).parent.parent.parent.parent / "knowledge_base"
-            )
+            cls._instance._knowledge_base_dir = Path(__file__).parent.parent.parent.parent / "knowledge_base"
         return cls._instance
 
     @property
@@ -30,7 +28,7 @@ class FileManager:
                 self._knowledge_base_dir,
             )
             return
-        
+
         for path in self._knowledge_base_dir.iterdir():
             if path.is_file():
                 yield path
@@ -45,5 +43,6 @@ class FileManager:
     def get_file_extension(self, file_path: Path) -> str:
         """Get the lowercase file extension."""
         return file_path.suffix.lower()
+
 
 file_manager = FileManager()

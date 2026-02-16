@@ -43,11 +43,7 @@ class Config(BaseSettings):
     openai: OpenAIConfig
     server: ServerConfig
 
-    model_config = SettingsConfigDict(
-        env_file=ENV_CONFIG_FILE,
-        env_file_encoding="utf-8",
-        env_nested_delimiter="__"
-    )
+    model_config = SettingsConfigDict(env_file=ENV_CONFIG_FILE, env_file_encoding="utf-8", env_nested_delimiter="__")
 
 
 config = Config()

@@ -17,10 +17,7 @@ class Chunker:
 
     def split(self, text: str, source: str) -> list[Chunk]:
         pieces = self._splitter.split_text(text)
-        chunks = [
-            Chunk(text=piece, source=source, index=i)
-            for i, piece in enumerate(pieces)
-        ]
+        chunks = [Chunk(text=piece, source=source, index=i) for i, piece in enumerate(pieces)]
 
         self.logger.info("Split '%s' into %d chunks", source, len(chunks))
         return chunks
