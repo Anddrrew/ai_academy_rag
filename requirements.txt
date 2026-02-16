@@ -13,7 +13,7 @@ sentence_transformers
 langchain-text-splitters
 langchain-community
 pypdf
-openai-whisper
+faster-whisper
 
 # chat
 openai

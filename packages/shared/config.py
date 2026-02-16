@@ -24,9 +24,13 @@ class ChunkingConfig(BaseModel):
     overlap: int = 50
 
 
+class WhisperConfig(BaseModel):
+    model: str = "base"
+    batch_size: int = 16
+
+
 class OpenAIConfig(BaseModel):
     chat_model: str = "gpt-4o-mini"
-    whisper_model: str = "base"
     api_key: str
 
 
@@ -40,6 +44,7 @@ class Config(BaseSettings):
     qdrant: QdrantConfig
     embedding: EmbeddingConfig
     chunking: ChunkingConfig = ChunkingConfig()
+    whisper: WhisperConfig = WhisperConfig()
     openai: OpenAIConfig
     server: ServerConfig
 
