@@ -1,5 +1,5 @@
-from packages.chat.src import llm
-from packages.shared.services import file_manager
+from llm import llm
+from shared.services import file_manager
 from shared.services.knowledge_storage import KnowledgeStorage
 from shared.services.embedder import embedder
 import logging

@@ -85,6 +85,8 @@ def wait_for_service(dependency: str, name: str, statuses: dict, timeout: int = 
 
 def run_service(service: dict, statuses: dict):
     log_file = open(os.path.join(LOGS_DIR, f"{service['name']}.log"), "w")
+    os.dup2(log_file.fileno(), sys.stdout.fileno())
+    os.dup2(log_file.fileno(), sys.stderr.fileno())
     sys.stdout = log_file
     sys.stderr = log_file
 
@@ -198,8 +200,13 @@ def print_table(statuses: dict, tick: int = 0):
     return lines
 
 
+def save_cursor():
+    sys.stdout.write("\033[s")
+    sys.stdout.flush()
+
+
 def refresh_table(statuses: dict, total_lines: int, tick: int = 0):
-    sys.stdout.write(f"\033[{total_lines}A")
+    sys.stdout.write("\033[u")
     for line in print_table(statuses, tick):
         sys.stdout.write(f"\033[2K{line}\n")
     sys.stdout.flush()
@@ -214,6 +221,7 @@ def main():
     for svc in SERVICES:
         statuses[svc["name"]] = "Pending"
 
+    save_cursor()
     lines = print_table(statuses)
     for line in lines:
         print(line)
@@ -241,8 +249,6 @@ def main():
         for svc in SERVICES:
             statuses[svc["name"]] = "Stopped"
         refresh_table(statuses, total_lines, tick)
-        manager.shutdown()
-        sys.exit(0)
 
     signal.signal(signal.SIGINT, shutdown)
     signal.signal(signal.SIGTERM, shutdown)
@@ -259,6 +265,8 @@ def main():
         if all(not p.is_alive() for p in processes):
             break
         time.sleep(RENDER_INTERVAL)
+
+    manager.shutdown()
 
 
 if __name__ == "__main__":
