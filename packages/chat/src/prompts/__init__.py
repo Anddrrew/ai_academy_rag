@@ -21,7 +21,9 @@ def system(context: str = "") -> str:
 
 def extract_search_query() -> str:
     return (
-        "Your task is to extract the search query from the user's question to find relevant information in a vector database. "
-        "Rewrite the user's question into a clear, search-optimized query. "
-        "Return ONLY the rewritten query, nothing else. If the user's question is already clear and search-optimized, return it as is. If the user's message does not have a question return SKIP." 
+        "Your task is to extract a search query from the user's message to find relevant information in a vector database.\n"
+        "The user's message may be a direct question, a request, a command, or an implicit information need.\n"
+        "For message that seeks information or knowledge, rewrite it into a clear, search-optimized query.\n"
+        "Return ONLY the rewritten query, nothing else.\n"
+        "Return SKIP only if the message is purely conversational with no information need."
     )
