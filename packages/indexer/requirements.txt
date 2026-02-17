@@ -1,8 +1,0 @@
-fastapi[standard]
-httpx
-langchain-text-splitters
-langchain-community
-pypdf
-qdrant-client
-rich
-openai-whisper

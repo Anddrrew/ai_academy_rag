@@ -1,4 +1,0 @@
-fastapi[standard]
-langchain-huggingface
-sentence_transformers
-
