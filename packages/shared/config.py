@@ -7,7 +7,7 @@ ENV_CONFIG_FILE = Path(__file__).parent.parent.parent / ".env"
 
 
 class QdrantConfig(BaseModel):
-    search_k: int = 5
+    search_k: int = 10
     host: str
     port: int
     collection: str
@@ -30,7 +30,7 @@ class ChunkingConfig(BaseModel):
 
 class WhisperConfig(BaseModel):
     model: str = "base"
-    batch_size: int = 16
+    batch_size: int = 8
 
 
 class OpenAIConfig(BaseModel):
