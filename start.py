@@ -8,14 +8,15 @@ import urllib.request
 import urllib.error
 
 import uvicorn
+from rich.live import Live
+from rich.table import Table
+from rich.text import Text
 
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 LOGS_DIR = os.path.join(ROOT, "logs")
 os.makedirs(LOGS_DIR, exist_ok=True)
 
-SPINNER = ["[=     ]", "[ =    ]", "[  =   ]", "[   =  ]", "[    = ]", "[     =]", "[    = ]", "[   =  ]", "[  =   ]", "[ =    ]"]
-RENDER_INTERVAL = 0.15
 HEALTH_INTERVAL = 1.0
 START_TIME = time.time()
 
@@ -113,7 +114,6 @@ def run_service(service: dict, statuses: dict):
 
 
 def check_health(url: str) -> str | None:
-    """Fetch the health URL and return the status field from the JSON response, or None on failure."""
     try:
         resp = urllib.request.urlopen(url, timeout=2)
         if resp.status == 200:
@@ -166,50 +166,43 @@ def format_uptime(seconds: float) -> str:
     return f"{m}m {s:02d}s"
 
 
-def print_table(statuses: dict, tick: int = 0):
+STATUS_COLORS = {
+    "Running": "green",
+    "Stopped": "red",
+    "Unavailable": "red",
+    "Unhealthy": "red",
+    "Timed out": "red",
+    "Pending": "dim",
+}
+
+
+def _status_style(status: str) -> str:
+    for key, color in STATUS_COLORS.items():
+        if status.startswith(key):
+            return color
+    return "yellow"
+
+
+def build_table(statuses: dict) -> Table:
     elapsed = time.time() - START_TIME
-    spin = SPINNER[tick % len(SPINNER)]
 
-    # Column widths
-    W_NAME, W_PORT, W_RT, W_STATUS, W_URL = 14, 8, 10, 22, 36
+    table = Table(title=f"RAG Services  (uptime: {format_uptime(elapsed)})", caption="Press Ctrl+C to stop all services. Logs: ./logs/<service>.log")
+    table.add_column("Name", style="bold", width=14)
+    table.add_column("Port", width=8)
+    table.add_column("Runtime", width=10)
+    table.add_column("Status", width=22)
+    table.add_column("URL", width=36)
 
-    rows = []
     for svc in DOCKER_SERVICES:
         status = statuses.get(svc["name"], "Checking...")
-        rows.append((svc["name"], str(svc["port"]), "Docker", status, svc["url"]))
+        table.add_row(svc["name"], str(svc["port"]), "Docker", Text(status, style=_status_style(status)), svc["url"])
+
     for svc in SERVICES:
         url = f"http://localhost:{svc['port']}/docs"
         status = statuses.get(svc["name"], "Pending")
-        rows.append((svc["name"].capitalize(), str(svc["port"]), "Python", status, url))
+        table.add_row(svc["name"].capitalize(), str(svc["port"]), "Python", Text(status, style=_status_style(status)), url)
 
-    def row_line(n, p, r, s, u):
-        return f"| {n:<{W_NAME}}| {p:<{W_PORT}}| {r:<{W_RT}}| {s:<{W_STATUS}}| {u:<{W_URL}}|"
-
-    sep = f"+{'':-<{W_NAME + 1}}+{'':-<{W_PORT + 1}}+{'':-<{W_RT + 1}}+{'':-<{W_STATUS + 1}}+{'':-<{W_URL + 1}}+"
-
-    lines = [sep]
-    lines.append(row_line("Name", "Port", "Runtime", "Status", "URL"))
-    lines.append(sep)
-    for name, port, runtime, status, url in rows:
-        lines.append(row_line(name, port, runtime, status, url))
-    lines.append(sep)
-    lines.append("")
-    lines.append(f"  RAG Services {spin}  (uptime: {format_uptime(elapsed)})")
-    lines.append("  Press Ctrl+C to stop all services. Logs: ./logs/<service>.log")
-
-    return lines
-
-
-def save_cursor():
-    sys.stdout.write("\033[s")
-    sys.stdout.flush()
-
-
-def refresh_table(statuses: dict, total_lines: int, tick: int = 0):
-    sys.stdout.write("\033[u")
-    for line in print_table(statuses, tick):
-        sys.stdout.write(f"\033[2K{line}\n")
-    sys.stdout.flush()
+    return table
 
 
 def main():
@@ -221,12 +214,6 @@ def main():
     for svc in SERVICES:
         statuses[svc["name"]] = "Pending"
 
-    save_cursor()
-    lines = print_table(statuses)
-    for line in lines:
-        print(line)
-    total_lines = len(lines)
-
     processes: list[multiprocessing.Process] = []
     for svc in SERVICES:
         p = multiprocessing.Process(target=run_service, args=(svc, statuses), name=svc["name"])
@@ -234,7 +221,6 @@ def main():
         processes.append(p)
 
     running = True
-    tick = 0
     last_health_check = 0.0
 
     def shutdown(sig, frame):
@@ -248,23 +234,22 @@ def main():
                 p.kill()
         for svc in SERVICES:
             statuses[svc["name"]] = "Stopped"
-        refresh_table(statuses, total_lines, tick)
 
     signal.signal(signal.SIGINT, shutdown)
     signal.signal(signal.SIGTERM, shutdown)
 
-    while running:
-        now = time.time()
-        if now - last_health_check >= HEALTH_INTERVAL:
-            update_health_statuses(statuses)
-            last_health_check = now
+    with Live(build_table(statuses), refresh_per_second=4) as live:
+        while running:
+            now = time.time()
+            if now - last_health_check >= HEALTH_INTERVAL:
+                update_health_statuses(statuses)
+                last_health_check = now
 
-        refresh_table(statuses, total_lines, tick)
-        tick += 1
+            live.update(build_table(statuses))
 
-        if all(not p.is_alive() for p in processes):
-            break
-        time.sleep(RENDER_INTERVAL)
+            if all(not p.is_alive() for p in processes):
+                break
+            time.sleep(0.25)
 
     manager.shutdown()
 
