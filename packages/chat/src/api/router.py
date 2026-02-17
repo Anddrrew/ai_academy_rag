@@ -1,11 +1,14 @@
+import logging
+
 from fastapi import APIRouter
 from pydantic import BaseModel
 
-from knowledge_storage import knowledge_storage
+from context import context
 from shared.services.embedder import embedder
 from shared.services.file_manager import file_manager
 from llm import llm
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
@@ -20,13 +23,11 @@ class ChatResponse(BaseModel):
 @router.post("/chat")
 def chat(request: ChatRequest) -> ChatResponse:
     question = request.question
-    vector = embedder.embed_query(question)
-    results = knowledge_storage.search(vector)
-    context_chunks = [
-        f"[Source: [{r.payload['source']}]({file_manager.get_public_url(r.payload['source'])})]\n{r.payload['text']}"
-        for r in results
-    ]
+    logger.debug("Question: %s", question)
+
+    context_chunks = context.get_chunks(question)
     answer = llm.chat(question, context_chunks)
+    logger.debug("Answer length: %d chars", len(answer))
     return ChatResponse(answer=answer)
 
 

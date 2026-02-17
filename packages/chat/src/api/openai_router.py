@@ -1,3 +1,4 @@
+import logging
 import time
 import uuid
 
@@ -5,12 +6,13 @@ from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
-from knowledge_storage import knowledge_storage
+from context import context
 from shared.config import config
 from shared.services.embedder import embedder
 from shared.services.file_manager import file_manager
 from llm import llm
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
@@ -23,18 +25,6 @@ class OpenAIChatRequest(BaseModel):
     model: str
     messages: list[Message]
     stream: bool = False
-
-
-def _get_context_chunks(messages: list[Message]) -> list[str]:
-    last_user = next((m.content for m in reversed(messages) if m.role == "user"), None)
-    if not last_user:
-        return []
-    vector = embedder.embed_query(last_user)
-    results = knowledge_storage.search(vector)
-    return [
-        f"[Source: [{r.payload['source']}]({file_manager.get_public_url(r.payload['source'])})]\n{r.payload['text']}"
-        for r in results
-    ]
 
 
 @router.get("/v1/models")
@@ -54,7 +44,8 @@ def list_models():
 
 @router.post("/v1/chat/completions")
 async def chat_completions(request: OpenAIChatRequest):
-    context_chunks = _get_context_chunks(request.messages)
+    last_message = request.messages[-1].content if request.messages else ""
+    context_chunks = context.get_chunks(last_message)
     messages = [m.model_dump() for m in request.messages]
 
     if request.stream:

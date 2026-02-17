@@ -6,6 +6,7 @@ from pydantic import BaseModel
 from rich.logging import RichHandler
 
 from runner import indexer, IndexingStatus
+from shared.config import config
 
 logging.basicConfig(
     level="INFO",
@@ -15,7 +16,8 @@ logging.basicConfig(
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    indexer.start()
+    if config.indexer.start_on_startup:
+        indexer.start()
     yield
     indexer.stop()
 

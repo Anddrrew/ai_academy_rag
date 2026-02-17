@@ -19,6 +19,10 @@ class EmbeddingConfig(BaseModel):
     public_url: str
 
 
+class IndexerConfig(BaseModel):
+    start_on_startup: bool = True
+
+
 class ChunkingConfig(BaseModel):
     size: int = 500
     overlap: int = 50
@@ -43,6 +47,7 @@ class ServerConfig(BaseModel):
 class Config(BaseSettings):
     qdrant: QdrantConfig
     embedding: EmbeddingConfig
+    indexer: IndexerConfig = IndexerConfig()
     chunking: ChunkingConfig = ChunkingConfig()
     whisper: WhisperConfig = WhisperConfig()
     openai: OpenAIConfig

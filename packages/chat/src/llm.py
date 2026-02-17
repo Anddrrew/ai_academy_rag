@@ -7,22 +7,14 @@ from collections.abc import AsyncIterator
 from openai import AsyncOpenAI, OpenAI
 
 from shared.config import config
-
-SYSTEM_PROMPT = """You are a helpful assistant. Answer the user's question using only the provided context.
-If the context does not contain enough information to answer, say so honestly."""
-
-SOURCES_INSTRUCTION = """At the end of your answer add a "Sources:" section listing each source as a markdown link, exactly as provided in the context (e.g. [filename.pdf](url))."""
+import prompts
 
 MODEL_NAME = config.openai.chat_model
 
 
-def _inject_context(messages: list[dict], context_chunks: list[str]) -> list[dict]:
-    if context_chunks:
-        context = "\n\n".join(context_chunks)
-        system_content = f"{SYSTEM_PROMPT}\n\n{SOURCES_INSTRUCTION}\n\nRelevant context:\n{context}"
-    else:
-        system_content = SYSTEM_PROMPT
-    return [{"role": "system", "content": system_content}] + messages
+def _build_system_message(context_chunks: list[str]) -> str:
+    context = "\n\n".join(context_chunks) if context_chunks else ""
+    return prompts.system(context=context)
 
 
 class LLM:
@@ -31,19 +23,29 @@ class LLM:
         self._client = OpenAI(api_key=config.openai.api_key)
         self._async_client = AsyncOpenAI(api_key=config.openai.api_key)
 
-    def chat(self, question: str, context_chunks: list[str]) -> str:
-        """Single-turn chat used by the legacy /chat endpoint."""
-        self.logger.debug("Calling %s with %d context chunks", MODEL_NAME, len(context_chunks))
-        messages = _inject_context([{"role": "user", "content": question}], context_chunks)
+    def extract_search_query(self, question: str) -> str | None:
+        """Rewrite a user question into a search-optimized query. Returns None if no search needed."""
         response = self._client.chat.completions.create(
             model=MODEL_NAME,
-            messages=messages,
+            messages=[
+                {"role": "system", "content": prompts.extract_search_query()},
+                {"role": "user", "content": question},
+            ],
         )
-        return response.choices[0].message.content
+        rewritten = response.choices[0].message.content.strip()
+        if rewritten == "SKIP":
+            self.logger.debug("Query skipped (no search needed): '%s'", question)
+            return None
+        self.logger.debug("Rewrote query: '%s' -> '%s'", question, rewritten)
+        return rewritten
+
+    def chat(self, question: str, context_chunks: list[str]) -> str:
+        """Single-turn chat used by the /chat endpoint."""
+        return self.chat_messages([{"role": "user", "content": question}], context_chunks)
 
     def chat_messages(self, messages: list[dict], context_chunks: list[str]) -> str:
         """Multi-turn chat used by /v1/chat/completions (non-streaming)."""
-        full_messages = _inject_context(messages, context_chunks)
+        full_messages = [{"role": "system", "content": _build_system_message(context_chunks)}] + messages
         self.logger.debug("Calling %s with %d messages", MODEL_NAME, len(full_messages))
         response = self._client.chat.completions.create(
             model=MODEL_NAME,
@@ -53,7 +55,7 @@ class LLM:
 
     async def stream(self, messages: list[dict], context_chunks: list[str]) -> AsyncIterator[str]:
         """Multi-turn streaming chat used by /v1/chat/completions (stream=True)."""
-        full_messages = _inject_context(messages, context_chunks)
+        full_messages = [{"role": "system", "content": _build_system_message(context_chunks)}] + messages
         self.logger.debug("Streaming %s with %d messages", MODEL_NAME, len(full_messages))
         completion_id = f"chatcmpl-{uuid.uuid4().hex}"
         created = int(time.time())
