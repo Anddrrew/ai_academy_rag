@@ -68,11 +68,10 @@ def _resolve_health_url(service_name: str) -> str:
     raise ValueError(f"Unknown service: {service_name}")
 
 
-def wait_for_service(dependency: str, name: str, statuses: dict, timeout: int = 120, interval: int = 2):
+def wait_for_service(dependency: str, name: str, statuses: dict, interval: int = 2):
     url = _resolve_health_url(dependency)
     statuses[name] = f"Waiting [{dependency.capitalize()}]"
-    deadline = time.time() + timeout
-    while time.time() < deadline:
+    while True:
         try:
             resp = urllib.request.urlopen(url, timeout=5)
             if resp.status == 200:
@@ -80,8 +79,6 @@ def wait_for_service(dependency: str, name: str, statuses: dict, timeout: int = 
         except (urllib.error.URLError, OSError):
             pass
         time.sleep(interval)
-    statuses[name] = "Timed out"
-    sys.exit(1)
 
 
 def run_service(service: dict, statuses: dict):
@@ -149,7 +146,7 @@ def update_health_statuses(statuses: dict):
             continue
         name = svc["name"]
         current = statuses.get(name, "")
-        if current in ("Pending", "Stopped", "Timed out"):
+        if current in ("Pending", "Stopped"):
             continue
         health_status = check_health(health_url)
         if health_status is not None:
@@ -171,7 +168,6 @@ STATUS_COLORS = {
     "Stopped": "red",
     "Unavailable": "red",
     "Unhealthy": "red",
-    "Timed out": "red",
     "Pending": "dim",
 }
 
